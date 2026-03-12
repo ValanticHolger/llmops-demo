@@ -149,6 +149,8 @@ vscode/
 ENV/
 env.bak/
 venv.bak/
+mlflow/mlflow.db
+mlflow/artifacts/*
 
 # Spyder project settings
 .spyderproject
