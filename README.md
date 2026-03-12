@@ -1,88 +1,111 @@
-<p align="center">
-	<img src="assets/berrybrain.png" alt="berrybrain artwork" width="360" />
-</p>
+# LLMOps Spotlight
 
-BerryBrain is a local AI hub for experimenting with Hugging Face model inference, tracking runs with MLflow, and organizing prompts and agents using LangChain. It helps you compare models, iterate on prompts, and keep reproducible experiment logs locally — and includes a Chainlit-hosted web UI for interactive demos and testing.
+This repository is a hands-on resource for an internal talk on **LLMOps with MLflow**.
 
-**Key components**
-- **MLflow**: local experiment tracking and artifact storage (see `mlflow/`).
-- **Hugging Face inference**: call different model endpoints via the HF router or provider-specific endpoints.
-- **LangChain**: organize prompts, chains and agents that orchestrate model calls and pipelines.
-- **Chainlit**: lightweight web UI to expose interactive agents and prompt experiments.
+It demonstrates how to:
+- instrument LLM calls,
+- track traces and costs,
+- use prompt templates,
+- capture tool usage,
+- run LLM-as-a-judge evaluations.
 
-## Features
-- Local MLflow server with autologging integration.
-- Example multi-model client integration (`app.py`).
-- Chainlit web UI for interactive testing and demos (optional scaffold).
-- Planned folder structure for prompts and agents to support rapid iteration.
+---
 
-## Quickstart
+## What’s inside
 
-1. Create and activate a virtual environment:
+- `demo/demo1.py` — basic LLM call + automatic MLflow tracing
+- `demo/demo2.py` — adds token/cost tracking as trace attributes
+- `demo/demo3.py` — uses prompt templates loaded from MLflow Prompt Registry
+- `demo/demo4.py` — tool-calling flow (agent + tool spans)
+- `demo/demo5.py` — evaluation pipeline with custom judge scorers
+- `mlflow/start-mlflow.sh` — local MLflow server startup script
+
+---
+
+## Prerequisites
+
+- Python 3.10+
+- A Hugging Face token with access to the routed models
+- macOS/Linux shell
+
+---
+
+## Setup
+
+1. Create and activate a virtual environment
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-2. Install dependencies:
+2. Install dependencies
 
 ```bash
-pip install --upgrade pip
 pip install -r requirements.txt
+pip install --no-cache-dir "mlflow[extras]"
 ```
 
-3. Add your Hugging Face token to a `.env` file in the repo root:
+3. Create a `.env` file in repo root
 
-```
-HF_TOKEN=your_huggingface_token
+```env
+HF_TOKEN=your_huggingface_token_here
 ```
 
-4. Start the MLflow server (starts UI at http://127.0.0.1:5000):
+---
+
+## Start MLflow
+
+From repo root:
 
 ```bash
 ./mlflow/start-mlflow.sh
 ```
 
-5. Run the example application:
+MLflow UI will be available at:
+
+- http://127.0.0.1:5000
+
+---
+
+## Run demos
+
+Open a second terminal (keep MLflow server running in the first one), activate the same environment, then run:
 
 ```bash
-python app.py
+source .venv/bin/activate
+python demo/demo1.py
+python demo/demo2.py
+python demo/demo3.py
+python demo/demo4.py
+python demo/demo5.py
 ```
 
-6. (Optional) Run the Chainlit web UI or demos:
+Recommended order is `demo1` → `demo5`.
 
-- The `demo/` folder is a small subfolder containing example Chainlit demos intended for colleagues; it's optional and for demonstration purposes only.
-- From the repository root you can run a demo directly:
+---
 
-```bash
-chainlit run demo/demo1-3.py -w
-```
+## Demo storyline (talk flow)
 
-- Or change into the `demo/` folder and run the demo there:
+1. **Observability first**: capture every LLM call as a trace.
+2. **Cost awareness**: attach cost metadata to spans.
+3. **Prompt management**: externalize prompts via MLflow.
+4. **Agent/tool transparency**: trace local tool invocation.
+5. **Quality loop**: evaluate outputs with multiple judge dimensions.
 
-```bash
-cd demo
-chainlit run demo1-3.py -w
-```
+---
 
-Open the MLflow UI at http://127.0.0.1:5000 to inspect runs, metrics and artifacts, and open the Chainlit UI (default shown in the terminal) for interactive agent demos.
+## Notes
 
-## Project layout (planned)
-- `app.py` — example showing model calls and MLflow autologging.
-- `mlflow/` — helper script and artifacts directory for the local MLflow server.
-- `assets/` — images and UI assets.
-- `prompts/` — prompt templates and tests (planned).
-- `agents/` — LangChain agent implementations (planned).
-- `chainlit/` — (optional) Chainlit app and UI assets (planned).
+- The scripts are intentionally lightweight and demo-focused.
+- Model names and prices in the demos are examples for the talk context.
+- If prompt/dataset registry entries are missing, create them in MLflow UI first (used in `demo3.py` and `demo5.py`).
 
-## Notes and recommendations
-- Ensure the MLflow server is running before launching experiments so autologging captures runs.
-- Swap model IDs in `app.py` for the models you want to compare; the example demonstrates calling multiple endpoints.
-- Use `prompts/` to store canonical prompt templates and `agents/` to encapsulate orchestration and memory with LangChain.
-- Use Chainlit to expose interactive demos and QA interfaces for prompt and model evaluation.
+---
 
-## Next steps
-- Add a `prompts/` scaffold and a basic LangChain agent implementation.
-- Scaffold a minimal Chainlit app under `chainlit/` that demonstrates model selection and logs results to MLflow.
-- Add notebooks or scripts showing how to compare prompt-model combinations and record metrics in MLflow.
+## Troubleshooting
+
+- **`HF_TOKEN` missing**: ensure `.env` exists and is loaded.
+- **Cannot reach MLflow**: verify server is running on `127.0.0.1:5000`.
+- **Prompt/Dataset not found**: confirm registry entries exist with expected names/versions.
+- **Model access error**: check token permissions and provider/model availability.
