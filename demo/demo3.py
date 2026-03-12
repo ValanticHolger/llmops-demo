@@ -1,4 +1,6 @@
 import os
+import json
+from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 import mlflow
@@ -15,9 +17,17 @@ client = OpenAI(
     api_key=hf_token,
 )
 
-model="meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:together" 
-input_cost = 0.27
-output_cost = 0.85
+CONFIG_PATH = Path(__file__).with_name("models.json")
+
+with CONFIG_PATH.open("r", encoding="utf-8") as f:
+    models = json.load(f)
+
+model_name = "GPT-OSS-120B"
+
+model_config = models[model_name]
+model = model_config["provider_model"]
+input_cost = model_config["input_cost"]
+output_cost = model_config["output_cost"]
 
 @mlflow.trace
 def llm_query(prompt: str, model: str) -> str:

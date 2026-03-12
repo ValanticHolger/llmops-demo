@@ -1,0 +1,12 @@
+{
+  "Llama-4": {
+    "provider_model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:together",
+    "input_cost": 0.27,
+    "output_cost": 0.85
+  },
+  "GPT-OSS-120B": {
+    "provider_model": "openai/gpt-oss-120b:hyperbolic",
+    "input_cost": 0.30,
+    "output_cost": 0.30
+  }
+}
