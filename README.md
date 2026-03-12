@@ -18,6 +18,8 @@ It demonstrates how to:
 - `demo/demo3.py` — uses prompt templates loaded from MLflow Prompt Registry
 - `demo/demo4.py` — tool-calling flow (agent + tool spans)
 - `demo/demo5.py` — evaluation pipeline with custom judge scorers
+- `demo/demo6.py` — Blue Guardrails tracing
+- `demo/demo7.py` — Blue Guardrails hallucination demo set (multiple trace cases)
 - `mlflow/start-mlflow.sh` — local MLflow server startup script
 
 ---
@@ -79,9 +81,11 @@ python demo/demo2.py
 python demo/demo3.py
 python demo/demo4.py
 python demo/demo5.py
+python demo/demo6.py
+python demo/demo7.py
 ```
 
-Recommended order is `demo1` → `demo5`.
+Recommended order is `demo1` → `demo7`.
 
 ---
 
