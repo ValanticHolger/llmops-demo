@@ -1,9 +1,11 @@
-import os
 import json
-from dotenv import load_dotenv
-from openai import OpenAI
+import os
+from pathlib import Path
+
 import mlflow
+from dotenv import load_dotenv
 from mlflow.entities import SpanType
+from openai import OpenAI
 
 load_dotenv()
 hf_token = os.getenv("HF_TOKEN")
@@ -17,16 +19,27 @@ client = OpenAI(
     api_key=hf_token,
 )
 
-model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:together"
-input_cost = 0.27
-output_cost = 0.85
+MODEL_NAME = "Llama-4"
+
+def load_model_settings(model_name: str) -> tuple[str, float, float]:
+    with Path(__file__).with_name("models.json").open("r", encoding="utf-8") as f:
+        models = json.load(f)
+
+    model_config = models[model_name]
+    return (
+        model_config["provider_model"],
+        model_config["input_cost"],
+        model_config["output_cost"],
+    )
+
 
 @mlflow.trace(span_type=SpanType.TOOL)
 def get_weather(location: str) -> str:
     """Mock-Funktion: Wetter-API abfragen."""
-    return location + ": 15°C und sonnig"
+    return f"{location}: 15°C und sonnig"
 
-tools_schema = [
+
+TOOLS_SCHEMA = [
     {
         "type": "function",
         "function": {
@@ -41,73 +54,81 @@ tools_schema = [
                 },
                 "required": ["location"],
             },
-        }
+        },
     }
 ]
 
+TOOL_REGISTRY = {
+    "get_weather": get_weather,
+}
+
+
+def run_tool_calls(tool_calls, messages: list, tool_registry: dict) -> None:
+    for tool_call in tool_calls:
+        tool_name = tool_call.function.name
+        tool_fn = tool_registry.get(tool_name)
+        if not tool_fn:
+            continue
+
+        arguments = json.loads(tool_call.function.arguments or "{}")
+        tool_result = tool_fn(**arguments)
+
+        messages.append(
+            {
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "name": tool_name,
+                "content": tool_result,
+            }
+        )
+
 
 @mlflow.trace(span_type=SpanType.AGENT)
-def llm_query_with_tools(prompt: str, model: str) -> str:
-
+def llm_query_with_tools(prompt: str, model: str, input_cost: float, output_cost: float) -> str:
     span = mlflow.get_current_active_span()
-    
-    messages = [
-        {"role": "user", "content": prompt}
-    ]
-    
-    completion = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=tools_schema,
-    )
+    messages = [{"role": "user", "content": prompt}]
 
-    response_message = completion.choices[0].message
-    
-    total_input_tokens = completion.usage.prompt_tokens
-    total_output_tokens = completion.usage.completion_tokens
+    total_input_tokens = 0
+    total_output_tokens = 0
 
-
-    if response_message.tool_calls:
-        messages.append(response_message)
-        
-        for tool_call in response_message.tool_calls:
-            if tool_call.function.name == "get_weather":
-                arguments = json.loads(tool_call.function.arguments)
-                
-                print(f"--> Führe lokales Tool aus mit Argumenten: {arguments}")
-                tool_result = get_weather(location=arguments.get("location"))
-                
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": tool_call.function.name,
-                    "content": tool_result,
-                })
-
-        second_completion = client.chat.completions.create(
+    while True:
+        completion = client.chat.completions.create(
             model=model,
             messages=messages,
+            tools=TOOLS_SCHEMA,
+            tool_choice="auto",
         )
-        
-        final_response = second_completion.choices[0].message.content
-        
-        total_input_tokens += second_completion.usage.prompt_tokens
-        total_output_tokens += second_completion.usage.completion_tokens
-        
-    else:
-        final_response = response_message.content
+
+        response_message = completion.choices[0].message
+        total_input_tokens += completion.usage.prompt_tokens
+        total_output_tokens += completion.usage.completion_tokens
+
+        messages.append(response_message)
+
+        if not response_message.tool_calls:
+            final_response = response_message.content
+            break
+
+        run_tool_calls(response_message.tool_calls, messages, TOOL_REGISTRY)
 
     span.set_attribute(
         "mlflow.llm.cost",
         {
             "input_cost": (total_input_tokens / 1_000_000) * input_cost,
             "output_cost": (total_output_tokens / 1_000_000) * output_cost,
-            "total_cost": (total_input_tokens / 1_000_000) * input_cost + (total_output_tokens / 1_000_000) * output_cost,
+            "total_cost": (total_input_tokens / 1_000_000) * input_cost
+            + (total_output_tokens / 1_000_000) * output_cost,
         },
     )
 
     return final_response
 
 
-print("\n--- ANTWORT ---")
-print(llm_query_with_tools("Wie ist das Wetter heute in Ludwigsburg?", model))
+model, input_cost, output_cost = load_model_settings(MODEL_NAME)
+
+llm_query_with_tools(
+    "Wie ist das Wetter heute in Ludwigsburg?",
+    model,
+    input_cost,
+    output_cost,
+)

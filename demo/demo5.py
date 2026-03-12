@@ -19,7 +19,7 @@ APP_MODEL = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:together"
 JUDGE_MODEL = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:together"
 
 EVAL_DATASET_NAME = "linkedin-prompt-expectation"
-PROMPT_URI = "prompts:/linkedin-post/2"
+PROMPT_URI = "prompts:/linkedin-post/3"
 
 client = OpenAI()
 
