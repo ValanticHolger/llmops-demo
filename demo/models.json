@@ -4,9 +4,16 @@
     "input_cost": 0.27,
     "output_cost": 0.85
   },
-  "GPT-OSS-120B": {
-    "provider_model": "openai/gpt-oss-120b:hyperbolic",
-    "input_cost": 0.30,
-    "output_cost": 0.30
+  "Llama-3": {
+    "provider_model": "meta-llama/Llama-3.1-8B-Instruct:cerebras",
+    "input_cost": 0.10,
+    "output_cost": 0.10
+  },
+  "Kimi-K2.5": {
+    "provider_model": "moonshotai/Kimi-K2.5:novita",
+    "input_cost": 0.60,
+    "output_cost": 3.60
   }
+
+
 }

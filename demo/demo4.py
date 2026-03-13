@@ -70,6 +70,7 @@ def run_tool_calls(tool_calls, messages: list, tool_registry: dict) -> None:
         if not tool_fn:
             continue
 
+        # Tool-Calling Magic
         arguments = json.loads(tool_call.function.arguments or "{}")
         tool_result = tool_fn(**arguments)
 

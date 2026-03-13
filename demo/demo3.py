@@ -22,7 +22,7 @@ CONFIG_PATH = Path(__file__).with_name("models.json")
 with CONFIG_PATH.open("r", encoding="utf-8") as f:
     models = json.load(f)
 
-model_name = "GPT-OSS-120B"
+model_name = "Llama-3"
 
 model_config = models[model_name]
 model = model_config["provider_model"]
