@@ -89,13 +89,15 @@ Recommended order is `demo1` → `demo7`.
 
 ---
 
-## Demo storyline (talk flow)
+## Key takeaways
 
-1. **Observability first**: capture every LLM call as a trace.
-2. **Cost awareness**: attach cost metadata to spans.
-3. **Prompt management**: externalize prompts via MLflow.
-4. **Agent/tool transparency**: trace local tool invocation.
-5. **Quality loop**: evaluate outputs with multiple judge dimensions.
+- `demo1.py` — Start simple: automatic tracing gives you immediate observability into prompt, response, latency, and flow without changing much code.
+- `demo2.py` — Add cost awareness early: token and price metadata in traces makes optimization and model comparison measurable.
+- `demo3.py` — Externalize prompts: prompt registry/versioning enables safer iteration, reproducibility, and rollback.
+- `demo4.py` — Treat tool calls as first-class telemetry: span-level visibility helps debug agent behavior and tool reliability.
+- `demo5.py` — Evaluate systematically: LLM-as-a-judge scorers convert subjective quality into trackable metrics.
+- `demo6.py` — Trace halluzination: Halluzination should be observable so policy decisions are auditable and tunable.
+- `demo7.py` — Test halluzination failure modes intentionally: curated hallucination scenarios reveal blind spots before production traffic does.
 
 ---
 
