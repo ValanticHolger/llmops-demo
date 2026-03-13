@@ -12,8 +12,16 @@
   "Kimi-K2.5": {
     "provider_model": "moonshotai/Kimi-K2.5:novita",
     "input_cost": 0.60,
+    "output_cost": 3.00
+  },
+  "Qwen-3.5": {
+    "provider_model": "Qwen/Qwen3.5-397B-A17B:novita",
+    "input_cost": 0.60,
     "output_cost": 3.60
+  },
+  "GPT-OSS-120B": {
+    "provider_model": "openai/gpt-oss-120b:novita",
+    "input_cost": 0.05,
+    "output_cost": 0.25
   }
-
-
 }
